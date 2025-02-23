@@ -11,3 +11,4 @@ dotenv
 geopy
 werkzeug
 gunicorn
+gevent
