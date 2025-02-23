@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TastyTrack - Find Your Perfect Meal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: url('/static/food.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            transition: all 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        .btn {
+            transition: all 0.3s ease-in-out;
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            transform: translateY(-3px);
+        }
+        .highlight {
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 8px;
+            transition: all 0.3s;
+        }
+        .highlight:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navbar -->
+    <nav class="flex justify-between items-center bg-white shadow-md py-4 px-8">
+        <h1 class="text-3xl font-bold text-red-600">🍽️ TastyTrack</h1>
+        <div class="flex items-center space-x-6">
+            
+            <a href="/" class="text-gray-700 hover:text-red-500">Home</a>
+            <a href="/nearby_search" class="text-gray-700 hover:text-red-500">Search Nearby</a>
+            <a href="/image_search" class="text-gray-700 hover:text-red-500">Image Search</a>
+            <a href="/restaurant_list" class="text-gray-700 hover:text-red-500">Collections</a>
+            <button class="bg-red-500 text-white px-5 py-2 rounded-lg btn">Login</button>
+        </div>
+    </nav>
+    
+    <!-- Header -->
+    <header class="text-center mt-16">
+        <h2 class="text-4xl font-extrabold text-red-500">
+            Your Ultimate Food Guide
+        </h2>
+        <p class="text-gray-600 mt-2">Explore top-rated restaurants, cafes, and bars near you.</p>
+    </header>
+    
+    <!-- Main Features -->
+    <section class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mt-12">
+        <!-- Nearby Restaurants -->
+        <div class="bg-white shadow-lg rounded-lg p-6 text-center card">
+            <span class="text-red-500 text-4xl">🏍️</span>
+            <h3 class="text-xl font-bold mt-4">Nearby Restaurants</h3>
+            <p class="text-gray-600 mt-2">Find exceptional dining options near you.</p>
+            <a href="/nearby_search" class="bg-red-500 text-white px-4 py-2 rounded-lg mt-4 btn inline-block">Explore Nearby</a>
+        </div>
+        
+        <!-- Image Search -->
+        <div class="bg-white shadow-lg rounded-lg p-6 text-center card">
+            <span class="text-red-500 text-4xl">📷</span>
+            <h3 class="text-xl font-bold mt-4">Image Search</h3>
+            <p class="text-gray-600 mt-2">Upload a food image to find matching restaurants.</p>
+            <input type="file" id="imageInput" accept="image/*" class="hidden">
+            <a href="/image_search" class="bg-red-500 text-white px-4 py-2 rounded-lg mt-4 btn inline-block">Search</a>
+        </div>
+        
+        <!-- Restaurant Collection -->
+        <div class="bg-white shadow-lg rounded-lg p-6 text-center card">
+            <span class="text-red-500 text-4xl">🍴</span>
+            <h3 class="text-xl font-bold mt-4">Restaurant Collection</h3>
+            <p class="text-gray-600 mt-2">Browse top-rated restaurant collections.</p>
+            <a href="/restaurant_list" class="bg-red-500 text-white px-4 py-2 rounded-lg mt-4 btn inline-block">View Collection</a>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="text-center text-gray-600 mt-16 py-6 bg-white shadow-md">
+        <p>&copy; 2025 TastyTrack. All rights reserved.</p>
+    </footer>
+</body>
+</html>

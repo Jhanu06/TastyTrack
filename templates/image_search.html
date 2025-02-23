@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Search - TastyTrack</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: url('/static/food.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        .btn {
+            transition: all 0.3s ease-in-out;
+            background: linear-gradient(135deg, #ff416c, #ff4b2b);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0px 5px 15px rgba(255, 65, 108, 0.5);
+        }
+        .restaurant-card {
+            background: rgba(255, 255, 255, 0.95);
+            overflow: hidden;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            min-height: 400px; /* Consistent height */
+        }
+        .restaurant-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+        .restaurant-image {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 12px 12px 0 0;
+        }
+        .restaurant-content {
+            padding: 12px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .restaurant-name {
+            font-size: 20px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            color: #333;
+        }
+        .restaurant-info {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .view-details {
+            transition: all 0.3s ease-in-out;
+            background: linear-gradient(135deg, #ff416c, #d9563f);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            margin-top: auto; /* Push the button to the bottom */
+        }
+        .view-details:hover {
+            transform: translateY(-3px);
+            box-shadow: 0px 5px 15px rgba(255, 65, 108, 0.5);
+        }
+        .loading {
+            display: none;
+            font-size: 18px;
+            text-align: center;
+            margin-top: 20px;
+            animation: blink 1s infinite alternate;
+        }
+        @keyframes blink {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <nav class="flex justify-between items-center bg-white shadow-md py-4 px-8">
+        <h1 class="text-3xl font-bold text-red-600">🍽️ TastyTrack</h1>
+        <div class="flex items-center space-x-6">
+            <a href="{{ url_for('home') }}" class="text-gray-700 hover:text-red-500">Home</a>
+            <a href="{{ url_for('nearby_search') }}" class="text-gray-700 hover:text-red-500">Search Nearby</a>
+            <a href="{{ url_for('image_search') }}" class="text-gray-700 hover:text-red-500 font-bold">Image Search</a>
+            <a href="{{ url_for('restaurant_list') }}" class="text-gray-700 hover:text-red-500">Collections</a>
+            <button class="btn">Login</button>
+        </div>
+    </nav>
+    
+    <main class="container mx-auto p-6">
+        <section class="bg-white shadow-lg rounded-lg p-6">
+            <h2 class="text-2xl font-bold text-center mb-4">Find Restaurants by Food Image</h2>
+            <form id="image-search-form" enctype="multipart/form-data" class="text-center">
+                <input type="file" id="image-upload" accept="image/*" required class="mb-4">
+                <button type="submit" id="search-btn" class="btn">Search Restaurants</button>
+            </form>
+        </section>
+
+        <div id="loading" class="loading">🔍 Searching for restaurants...</div>
+        <div id="error-message" class="hidden text-center text-red-600 font-bold"></div>
+        <div id="results" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6"></div>
+    </main>
+
+    <script>
+        document.getElementById('image-search-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('error-message').classList.add('hidden');
+            document.getElementById('results').innerHTML = '';
+
+            const imageFile = document.getElementById('image-upload').files[0];
+            if (!imageFile) {
+                alert("Please select an image first");
+                document.getElementById('loading').classList.add('hidden');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image', imageFile);
+
+            try {
+                const response = await fetch(`/api/restaurants/search-by-image`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                document.getElementById('loading').classList.add('hidden');
+
+                if (data.error) {
+                    document.getElementById('error-message').textContent = data.error;
+                    document.getElementById('error-message').classList.remove('hidden');
+                } else if (data.restaurants && data.restaurants.length > 0) {
+                    document.getElementById('results').innerHTML = data.restaurants.map(restaurant => `
+                        <div class="restaurant-card">
+                            <img src="${restaurant.featured_image || 'https://via.placeholder.com/1200x500'}" 
+                                alt="${restaurant.name}" class="restaurant-image">
+                            <div class="restaurant-content">
+                                <h3 class="restaurant-name">${restaurant.name}</h3>
+                                <p class="restaurant-info"><strong>📍 Address:</strong> ${restaurant.location.locality_verbose}</p>
+                                <p class="restaurant-info"><strong>🍴 Cuisine:</strong> ${restaurant.cuisines}</p>
+                                <p class="restaurant-info"><strong>⭐ Rating:</strong> ${restaurant.user_rating?.aggregate_rating || 'N/A'} (${restaurant.user_rating?.votes || '0'} votes)</p>
+                                <a href="/restaurant/${restaurant.id}" class="view-details">View Details →</a>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById('results').innerHTML = `<p style='text-align:center'>No matching restaurants found.</p>`;
+                }
+            } catch (error) {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('error-message').textContent = "Error: " + error.message;
+                document.getElementById('error-message').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

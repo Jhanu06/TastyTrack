@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TastyTrack - Restaurant Details</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-color: #E23744;
+            --secondary-color: #CB202D;
+            --text-dark: #1C1C1C;
+            --text-light: #696969;
+            --background-gray: #F8F8F8;
+            --white: #FFFFFF;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--background-gray);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .nav {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+            background-color: rgba(226, 55, 68, 0.1);
+        }
+
+        .hero {
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.7);
+        }
+
+        .hero h2 {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--white);
+            font-size: 2.5rem;
+            background: rgba(0,0,0,0.4);
+            padding: 20px 40px;
+            border-radius: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .rating-badge {
+            display: inline-block;
+            color: var(--white);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .services {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+        }
+
+        .services h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: var(--text-light);
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: var(--primary-color);
+            background: #ffebee;
+            border-radius: 8px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">🍽️ TastyTrack</div>
+            <div class="nav-links">    
+                <a href="/">🏠 Home</a>
+                <a href="/nearby_search">📍 Nearby</a>
+                <a href="/image_search">📸 Image Search</a>
+                <a href="/restaurant_list">🍴 All Restaurants</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="restaurant-details" class="container">
+            <div class="loading">⏳ Loading restaurant details...</div>
+        </section>
+    </main>
+
+    <script>
+        const restaurantId = window.location.pathname.split('/').pop();
+
+        async function fetchRestaurantDetails() {
+            const detailsContainer = document.getElementById('restaurant-details');
+
+            try {
+                const response = await fetch(`/api/restaurant/${restaurantId}`);
+                const restaurant = await response.json();
+
+                if (restaurant.error) {
+                    detailsContainer.innerHTML = `<div class="error">❌ ${restaurant.error}</div>`;
+                    return;
+                }
+
+                detailsContainer.innerHTML = `
+                    <div class="hero">
+                        <img src="${restaurant.featured_image || 'https://via.placeholder.com/1200x500'}" alt="${restaurant.name}">
+                        <h2>${restaurant.name}</h2>
+                    </div>
+
+                    <div class="details-grid">
+                        <div class="card">
+                            <h3>📍 Location</h3>
+                            <p><strong>Address:</strong> ${restaurant.location?.address || "Not available"}</p>
+                            <p><strong>City:</strong> ${restaurant.location?.city || "Not available"}</p>
+                        </div>
+
+                        <div class="card">
+                            <h3>💰 Pricing & Ratings</h3>
+                            <p><strong>Avg Cost:</strong> ${restaurant.currency || ''} ${restaurant.average_cost_for_two || "N/A"}</p>
+                            <p><strong>Rating:</strong> 
+                                <span class="rating-badge" style="background-color:#${restaurant.user_rating?.rating_color || 'ccc'};">${restaurant.user_rating?.aggregate_rating || "N/A"}</span> 
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="services">
+                        <h3>🔧 Services</h3>
+                        <p><strong>Table Booking:</strong> ${restaurant.has_table_booking ? "✅ Yes" : "❌ No"}</p>
+                        <p><strong>Online Delivery:</strong> ${restaurant.has_online_delivery ? "✅ Yes" : "❌ No"}</p>
+                        <p><strong>Menu:</strong> ${restaurant.menu_url ? `<a href="${restaurant.menu_url}" target="_blank">View Menu</a>` : "❌ Not Available"}</p>
+                    </div>
+                `;
+            } catch (error) {
+                detailsContainer.innerHTML = `<div class="error">❌ Error loading details: ${error.message}</div>`;
+            }
+        }
+
+        fetchRestaurantDetails();
+    </script>
+</body>
+</html>

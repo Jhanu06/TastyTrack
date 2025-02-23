@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Restaurants - TastyTrack</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+     body {
+    background: url('/static/food.png') no-repeat center center fixed;
+    background-size: cover;
+    background-color: #f8f9fa; /* Fallback background color */
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease-in-out;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+.btn {
+    transition: all 0.3s ease-in-out;
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 5px 15px rgba(255, 65, 108, 0.5);
+}
+
+.restaurant-card {
+    background: rgba(255, 255, 255, 0.95);
+    overflow: hidden;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    max-width: 184cqmax;
+    min-height: 400px; /* Consistent height */
+}
+
+.restaurant-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.restaurant-image {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 12px 12px 0 0;
+}
+
+.restaurant-content {
+    padding: 12px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Ensures content is spaced properly */
+}
+
+.restaurant-name {
+    font-size: 20px;
+    margin-bottom: 12px;
+    font-weight: 700;
+    color: #333;
+}
+
+.restaurant-info {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.view-details {
+    transition: all 0.3s ease-in-out;
+    background: linear-gradient(135deg, #ff416c, #d9563f);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    margin-top: auto; /* Push the button to the bottom */
+    text-decoration: none; /* Remove underline */
+    display: block; /* Ensure it takes full width */
+}
+
+.view-details:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 5px 15px rgba(255, 65, 108, 0.5);
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.pagination button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.pagination button:not(:disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 5px 15px rgba(255, 65, 108, 0.5);
+}
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="flex justify-between items-center bg-white shadow-md py-4 px-8">
+        <h1 class="text-3xl font-bold text-red-600">🍽️ TastyTrack</h1>
+        <div class="flex items-center space-x-6">
+            <a href="/" class="text-gray-700 hover:text-red-500">Home</a>
+            <a href="/nearby_search" class="text-gray-700 hover:text-red-500">Nearby</a>
+            <a href="/image_search" class="text-gray-700 hover:text-red-500">Image Search</a>
+            <a href="/restaurant_list" class="text-gray-700 hover:text-red-500 font-bold">All Restaurants</a>
+            <button class="btn">Login</button>
+        </div>
+    </nav>
+
+    <header class="text-center mt-10">
+        <h2 class="text-4xl font-extrabold text-red-500">All Restaurants</h2>
+        <p class="text-gray-600 mt-2">Find your favorite restaurants using filters</p>
+    </header>
+
+    <section class="max-w-5xl mx-auto mt-12 grid md:grid-cols-4 gap-6">
+        <div class="card text-center">
+            <h3 class="text-xl font-bold">🌍 Country</h3>
+            <select id="country" class="mt-2 p-2 border border-gray-300 rounded">
+                <option value="">All Countries</option>
+                <option value="1">India</option>
+                <option value="14">Australia</option>
+                <option value="30">Brazil</option>
+                <option value="37">Canada</option>
+                <option value="94">Indonesia</option>
+                <option value="148">New Zealand</option>
+                <option value="215">UK</option>
+                <option value="216">USA</option>
+            </select>
+        </div>
+
+        <div class="card text-center">
+            <h3 class="text-xl font-bold">🍽️ Cuisine</h3>
+            <select id="cuisine" class="mt-2 p-2 border border-gray-300 rounded">
+                <option value="">All Cuisines</option>
+            </select>
+        </div>
+
+        <div class="card text-center">
+            <h3 class="text-xl font-bold">💰 Max Cost</h3>
+            <input type="number" id="avg_cost" class="mt-2 p-2 w-full border border-gray-300 rounded" placeholder="Enter max cost">
+        </div>
+
+        <div class="card text-center">
+            <h3 class="text-xl font-bold">🔍 Search</h3>
+            <input type="text" id="search-query" class="mt-2 p-2 w-full border border-gray-300 rounded" placeholder="Restaurant name...">
+        </div>
+    </section>
+
+    <div class="flex justify-center mt-8">
+        <button class="btn" id="filter-btn">Apply Filters</button>
+    </div>
+
+    <section id="restaurants-container" class="max-w-5xl mx-auto mt-12 grid md:grid-cols-3 gap-6">
+        <p class="text-gray-600">No results found.</p>
+    </section>
+
+    <div class="pagination text-center mt-8">
+        <button id="prev-page" class="btn" disabled>← Previous</button>
+        <span id="page-info" class="mx-4">Page 1 of 1</span>
+        <button id="next-page" class="btn" disabled>Next →</button>
+    </div>
+
+    <footer class="text-center text-gray-600 mt-16 py-6 bg-white shadow-md">
+        <p>&copy; 2025 TastyTrack. All rights reserved.</p>
+    </footer>
+
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        const limit = 9;
+        const restaurantsContainer = document.getElementById('restaurants-container');
+        const cuisineDropdown = document.getElementById("cuisine");
+        const countryDropdown = document.getElementById("country");
+        const avgCostInput = document.getElementById("avg_cost");
+        const searchInput = document.getElementById("search-query");
+        const filterButton = document.getElementById("filter-btn");
+        const prevPageButton = document.getElementById("prev-page");
+        const nextPageButton = document.getElementById("next-page");
+        const pageInfo = document.getElementById("page-info");
+
+        async function fetchCuisines() {
+            try {
+                const response = await fetch("/api/cuisines");
+                const data = await response.json();
+
+                if (data.cuisines) {
+                    cuisineDropdown.innerHTML = '<option value="">All Cuisines</option>' +
+                        data.cuisines.map(cuisine =>
+                            `<option value="${cuisine}">${cuisine}</option>`
+                        ).join('');
+                }
+            } catch (error) {
+                console.error("Error fetching cuisines:", error);
+            }
+        }
+
+        function getCountryName(countryId) {
+            const countries = {
+                1: "India",
+                14: "Australia",
+                30: "Brazil",
+                37: "Canada",
+                94: "Indonesia",
+                148: "New Zealand",
+                215: "UK",
+                216: "USA"
+            };
+            return countries[countryId] || "Unknown";
+        }
+
+        async function fetchRestaurants() {
+    restaurantsContainer.innerHTML = `<div class="text-center text-gray-500">Loading restaurants...</div>`;
+
+    const params = {
+        page: currentPage,
+        limit: limit,
+        country_code: countryDropdown.value,
+        cuisine: cuisineDropdown.value,
+        avg_cost: avgCostInput.value,
+        search: searchInput.value
+    };
+
+    try {
+        const queryString = new URLSearchParams(params).toString();
+        const response = await fetch(`/api/restaurants?${queryString}`);
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || 'Failed to fetch restaurants');
+
+        if (data.restaurants.length > 0) {
+            restaurantsContainer.innerHTML = data.restaurants.map(restaurant => `
+    <div class="restaurant-card">
+        <img src="${restaurant.featured_image || 'https://via.placeholder.com/1200x500'}" 
+            alt="${restaurant.name}" class="restaurant-image">
+        <div class="restaurant-content">
+            <h3 class="restaurant-name">${restaurant.name}</h3>
+            <p class="restaurant-info"><strong>📍 Address:</strong> ${restaurant.location.locality_verbose}</p>
+            <p class="restaurant-info"><strong>🍴 Cuisine:</strong> ${restaurant.cuisines}</p>
+            <p class="restaurant-info"><strong>⭐ Rating:</strong> ${restaurant.user_rating?.aggregate_rating || 'N/A'} (${restaurant.user_rating?.votes || '0'} votes)</p>
+            <a href="/restaurant/${restaurant.id}" class="view-details">View Details →</a>
+        </div>
+    </div>
+`).join('');
+
+        } else {
+            restaurantsContainer.innerHTML = `<div class="text-center text-gray-500">No restaurants found.</div>`;
+        }
+
+        totalPages = data.total_pages || 1;
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        prevPageButton.disabled = currentPage <= 1;
+        nextPageButton.disabled = currentPage >= totalPages;
+
+    } catch (error) {
+        console.error("Error:", error);
+        restaurantsContainer.innerHTML = `<div class="text-center text-red-500">${error.message}</div>`;
+    }
+}
+
+
+        // Event Listeners
+        filterButton.addEventListener("click", () => {
+            currentPage = 1;
+            fetchRestaurants();
+        });
+
+        prevPageButton.addEventListener("click", () => {
+            if (currentPage > 1) {
+                currentPage--;
+                fetchRestaurants();
+            }
+        });
+
+        nextPageButton.addEventListener("click", () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                fetchRestaurants();
+            }
+        });
+
+        // Initial load
+        fetchCuisines();
+        fetchRestaurants();
+    </script>
+</body>
+</html>
