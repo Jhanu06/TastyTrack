@@ -202,81 +202,134 @@ def get_cuisines():
 @app.route("/api/restaurants/nearby", methods=['GET'])
 def get_nearby_restaurants():
     try:
-        location = request.args.get("location")
+        # Get input parameters
+        location = request.args.get("location", "")
         lat = request.args.get("lat")
         lon = request.args.get("lon")
-        radius = float(request.args.get("radius", 3))  
+        radius = request.args.get("radius", "3")
         page = int(request.args.get("page", 1))
-        limit = int(request.args.get("limit",9))
-        offset = (page - 1) * limit
-
+        limit = int(request.args.get("limit", 9))
+        
         # Log the received parameters
-        app.logger.info(f"Received location: {location}, lat: {lat}, lon: {lon}, radius: {radius}")
-
-        if location:
-            geocoder = Nominatim(user_agent="restaurant_finder_app")
-            location_data = geocoder.geocode(location)
-            if not location_data:
-                return jsonify({"error": "Location not found"}), 404
-            lat = location_data.latitude
-            lon = location_data.longitude
-
+        app.logger.info(f"Nearby search request: location='{location}', lat={lat}, lon={lon}, radius={radius}, page={page}, limit={limit}")
+        
+        # Validate input parameters
+        if not location and (not lat or not lon):
+            return jsonify({"error": "Either location or latitude/longitude coordinates are required"}), 400
+            
+        # Convert radius to float
         try:
-            lat = float(lat)
-            lon = float(lon)
-        except (TypeError, ValueError):
-            return jsonify({"error": "Invalid coordinates"}), 400
-
-        # Log the coordinates being used
-        app.logger.info(f"Using coordinates - lat: {lat}, lon: {lon}")
-
-        lat_margin = 0.5  
-        lon_margin = 0.5  
-
-        query = supabase.table("zomato_full_data")\
-    .select("*, location->>latitude AS latitude, location->>longitude AS longitude")\
-    .gte("location->>latitude", str(lat - lat_margin))\
-    .lte("location->>latitude", str(lat + lat_margin))\
-    .gte("location->>longitude", str(lon - lon_margin))\
-    .lte("location->>longitude", str(lon + lon_margin))
-
-        response = query.execute()
-        if not response.data:
-            return jsonify({"error": "No restaurants found in this area"}), 404
-
-        nearby_restaurants = []
-        for restaurant in response.data:
+            radius = float(radius) if radius.strip() else 3.0
+        except ValueError:
+            return jsonify({"error": "Radius must be a valid number"}), 400
+        
+        # If location is provided, geocode it
+        if location and (not lat or not lon):
             try:
-                rest_lat = float(restaurant["location"]["latitude"])
-                rest_lon = float(restaurant["location"]["longitude"])
-                distance = geodesic((lat, lon), (rest_lat, rest_lon)).kilometers
-                if distance <= radius:
-                    restaurant["distance"] = round(distance, 2)
-                    nearby_restaurants.append(restaurant)
-            except (ValueError, TypeError) as e:
-                continue
-
-        nearby_restaurants.sort(key=lambda x: x["distance"]) 
-
-        total_count = len(nearby_restaurants)
-        total_pages = max(1, math.ceil(total_count / limit))
-        paginated_restaurants = nearby_restaurants[offset:offset + limit]
-
-        return jsonify({
-            "restaurants": paginated_restaurants,
-            "page": page,
-            "total_pages": total_pages,
-            "total_restaurants": total_count,
-            "search_location": {
-                "latitude": lat,
-                "longitude": lon,
-                "radius_km": radius
-            }
-        })
+                geocoder = Nominatim(user_agent="restaurant_finder_app")
+                location_data = geocoder.geocode(location)
+                if not location_data:
+                    return jsonify({"error": f"Location '{location}' could not be found"}), 404
+                lat = location_data.latitude
+                lon = location_data.longitude
+                app.logger.info(f"Geocoded location '{location}' to lat: {lat}, lon: {lon}")
+            except Exception as e:
+                app.logger.error(f"Geocoding error: {str(e)}")
+                return jsonify({"error": f"Error geocoding location: {str(e)}"}), 500
+        else:
+            # Parse coordinates
+            try:
+                lat = float(lat)
+                lon = float(lon)
+            except (ValueError, TypeError):
+                return jsonify({"error": "Latitude and longitude must be valid numbers"}), 400
+        
+        # Get restaurants from database
+        try:
+            # Get all restaurants (you might want to optimize this for large datasets)
+            response = supabase.table("zomato_full_data").select("*").execute()
+            
+            if not response.data:
+                return jsonify({
+                    "restaurants": [],
+                    "page": page,
+                    "total_pages": 0,
+                    "total_restaurants": 0,
+                    "search_location": {
+                        "latitude": lat,
+                        "longitude": lon,
+                        "radius_km": radius
+                    }
+                }), 200
+            
+            # Filter restaurants within radius
+            nearby_restaurants = []
+            for restaurant in response.data:
+                try:
+                    # Check if location data exists
+                    if not restaurant.get("location"):
+                        continue
+                    
+                    # Extract coordinates from restaurant
+                    rest_lat = None
+                    rest_lon = None
+                    
+                    # Handle nested location object
+                    if isinstance(restaurant["location"], dict):
+                        if "latitude" in restaurant["location"] and "longitude" in restaurant["location"]:
+                            try:
+                                rest_lat = float(restaurant["location"]["latitude"])
+                                rest_lon = float(restaurant["location"]["longitude"])
+                            except (ValueError, TypeError):
+                                continue
+                    
+                    # Skip if coordinates are missing or invalid
+                    if rest_lat is None or rest_lon is None or rest_lat == 0 or rest_lon == 0:
+                        continue
+                    
+                    # Calculate distance
+                    distance = geodesic((lat, lon), (rest_lat, rest_lon)).kilometers
+                    
+                    # Add restaurant if within radius
+                    if distance <= radius:
+                        restaurant_copy = restaurant.copy()
+                        restaurant_copy["distance"] = round(distance, 2)
+                        nearby_restaurants.append(restaurant_copy)
+                        
+                except (ValueError, TypeError, KeyError) as e:
+                    app.logger.warning(f"Error processing restaurant: {str(e)}")
+                    continue
+            
+            # Sort by distance
+            nearby_restaurants.sort(key=lambda x: x.get("distance", float('inf')))
+            
+            # Calculate pagination
+            total_count = len(nearby_restaurants)
+            total_pages = max(1, math.ceil(total_count / limit))
+            offset = (page - 1) * limit
+            paginated_restaurants = nearby_restaurants[offset:offset + limit]
+            
+            # Return formatted response
+            return jsonify({
+                "restaurants": paginated_restaurants,
+                "page": page,
+                "total_pages": total_pages,
+                "total_restaurants": total_count,
+                "search_location": {
+                    "latitude": lat,
+                    "longitude": lon,
+                    "radius_km": radius
+                }
+            }), 200
+            
+        except Exception as e:
+            app.logger.error(f"Database query error: {str(e)}\n{traceback.format_exc()}")
+            return jsonify({"error": f"Failed to query restaurant database: {str(e)}"}), 500
+            
     except Exception as e:
-        app.logger.error(f"Error in get_nearby_restaurants: {str(e)}")
+        app.logger.error(f"Nearby search error: {str(e)}\n{traceback.format_exc()}")
         return jsonify({"error": f"Server error: {str(e)}"}), 500
-
+    
 @app.route("/api/restaurants/search-by-image", methods=['POST'])
 def search_restaurants_by_image():
     try:
@@ -335,7 +388,4 @@ def search_restaurants_by_image():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # Use Render's dynamic PORT
-    app.run(host="0.0.0.0", port=port, debug=True)
-
-
+    app.run(debug=True)

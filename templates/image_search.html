@@ -6,100 +6,323 @@
     <title>Image Search - TastyTrack</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
         body {
             background: url('/static/food.png') no-repeat center center fixed;
             background-size: cover;
+            position: relative;
         }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 65, 108, 0.1), rgba(255, 75, 43, 0.1));
+            z-index: -1;
+        }
+        
         .card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 12px;
             padding: 20px;
-            transition: all 0.3s ease-in-out;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
+        
         .card:hover {
-            transform: scale(1.05);
-            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
+            transform: scale(1.05) translateY(-10px);
+            box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.3);
         }
+        
         .btn {
-            transition: all 0.3s ease-in-out;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             background: linear-gradient(135deg, #ff416c, #ff4b2b);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-weight: bold;
-        }
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0px 5px 15px rgba(255, 65, 108, 0.5);
-        }
-        .restaurant-card {
-            background: rgba(255, 255, 255, 0.95);
-            overflow: hidden;
-            border-radius: 10px;
-            padding: 10px;
-            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            display: flex;
-            flex-direction: column;
-            min-height: 400px; /* Consistent height */
-        }
-        .restaurant-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-        }
-        .restaurant-image {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
-            border-radius: 12px 12px 0 0;
-        }
-        .restaurant-content {
-            padding: 12px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .restaurant-name {
-            font-size: 20px;
-            margin-bottom: 12px;
-            font-weight: 700;
-            color: #333;
-        }
-        .restaurant-info {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .view-details {
-            transition: all 0.3s ease-in-out;
-            background: linear-gradient(135deg, #ff416c, #d9563f);
             color: white;
             padding: 12px 20px;
             border-radius: 8px;
             font-weight: bold;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+            transition: all 0.4s ease-in-out;
+            z-index: -1;
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 20px rgba(255, 65, 108, 0.6);
+        }
+        
+        .btn:hover::before {
+            left: 0;
+        }
+        
+        .restaurant-card {
+            background: rgba(255, 255, 255, 0.95);
+            overflow: hidden;
+            border-radius: 16px;
+            padding: 0;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.15);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            min-height: 420px;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+        
+        .restaurant-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #ff416c, #ff4b2b, #ff416c);
+            background-size: 200% 100%;
+            animation: gradientMove 3s ease infinite;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s ease;
+        }
+        
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .restaurant-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        
+        .restaurant-card:hover::after {
+            transform: scaleX(1);
+        }
+        
+        .restaurant-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 16px 16px 0 0;
+            transition: all 0.5s ease;
+            filter: brightness(0.95);
+        }
+        
+        .restaurant-card:hover .restaurant-image {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+        
+        .restaurant-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .restaurant-name {
+            font-size: 22px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            color: #333;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .restaurant-name::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #ff416c, #ff4b2b);
+            transition: width 0.3s ease;
+        }
+        
+        .restaurant-card:hover .restaurant-name::after {
+            width: 100%;
+        }
+        
+        .restaurant-info {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.3s ease;
+        }
+        
+        .restaurant-card:hover .restaurant-info {
+            transform: translateX(5px);
+        }
+        
+        .view-details {
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            background: linear-gradient(135deg, #ff416c, #d9563f);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: bold;
             cursor: pointer;
             text-align: center;
-            margin-top: auto; /* Push the button to the bottom */
+            margin-top: auto;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            letter-spacing: 0.5px;
         }
+        
+        .view-details::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #d9563f, #ff416c);
+            transition: all 0.4s ease-in-out;
+            z-index: -1;
+        }
+        
         .view-details:hover {
-            transform: translateY(-3px);
-            box-shadow: 0px 5px 15px rgba(255, 65, 108, 0.5);
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 20px rgba(255, 65, 108, 0.5);
         }
+        
+        .view-details:hover::before {
+            left: 0;
+        }
+        
         .loading {
             display: none;
-            font-size: 18px;
+            font-size: 20px;
             text-align: center;
-            margin-top: 20px;
-            animation: blink 1s infinite alternate;
+            margin-top: 30px;
+            color: #ff416c;
+            font-weight: bold;
+            position: relative;
         }
-        @keyframes blink {
-            0% { opacity: 0.5; }
-            100% { opacity: 1; }
+        
+        .loading::after {
+            content: '...';
+            position: absolute;
+            animation: loadingDots 1.5s infinite;
         }
+        
+        @keyframes loadingDots {
+            0% { content: '.'; }
+            33% { content: '..'; }
+            66% { content: '...'; }
+            100% { content: '.'; }
+        }
+
+        /* Navigation Enhancements */
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav:hover {
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        nav a {
+            position: relative;
+            padding: 5px 0;
+            transition: all 0.3s ease;
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ff416c, #ff4b2b);
+            transition: width 0.3s ease;
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        /* Form Enhancements */
+        form {
+            transition: all 0.3s ease;
+        }
+        
+        input[type="file"] {
+            padding: 10px;
+            border: 2px dashed #ff416c;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        input[type="file"]:hover {
+            border-color: #ff4b2b;
+            background: rgba(255, 65, 108, 0.05);
+        }
+        
+        /* Add some animations for page elements */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        section {
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        /* Staggered animations for results */
+        #results > div {
+            opacity: 0;
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+        
+        #results > div:nth-child(1) { animation-delay: 0.1s; }
+        #results > div:nth-child(2) { animation-delay: 0.2s; }
+        #results > div:nth-child(3) { animation-delay: 0.3s; }
+        #results > div:nth-child(4) { animation-delay: 0.4s; }
+        #results > div:nth-child(5) { animation-delay: 0.5s; }
+        #results > div:nth-child(6) { animation-delay: 0.6s; }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -123,7 +346,7 @@
             </form>
         </section>
 
-        <div id="loading" class="loading">🔍 Searching for restaurants...</div>
+        <div id="loading" class="loading">🔍 Searching for restaurants</div>
         <div id="error-message" class="hidden text-center text-red-600 font-bold"></div>
         <div id="results" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6"></div>
     </main>
@@ -131,14 +354,14 @@
     <script>
         document.getElementById('image-search-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('loading').style.display = 'block';
             document.getElementById('error-message').classList.add('hidden');
             document.getElementById('results').innerHTML = '';
 
             const imageFile = document.getElementById('image-upload').files[0];
             if (!imageFile) {
                 alert("Please select an image first");
-                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('loading').style.display = 'none';
                 return;
             }
 
@@ -152,7 +375,7 @@
                 });
 
                 const data = await response.json();
-                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('loading').style.display = 'none';
 
                 if (data.error) {
                     document.getElementById('error-message').textContent = data.error;
@@ -175,7 +398,7 @@
                     document.getElementById('results').innerHTML = `<p style='text-align:center'>No matching restaurants found.</p>`;
                 }
             } catch (error) {
-                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('loading').style.display = 'none';
                 document.getElementById('error-message').textContent = "Error: " + error.message;
                 document.getElementById('error-message').classList.remove('hidden');
             }
